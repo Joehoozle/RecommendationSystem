@@ -1,3 +1,5 @@
+import math as m
+
 def cosineDiff(a,b):
     tracker = 0
     sizeA = 0
@@ -11,16 +13,11 @@ def cosineDiff(a,b):
     sim = tracker / ((sizeA ** 0.5) * (sizeB ** 0.5))
     return sim
 
-
-
 def diffCompare(a):
     if type(a) == tuple:
         return a[1]
     else:
         return a
-
-
-
 
 def pearsonCorrWeight(a,b,avgA,avgB):
     tracker = 0
@@ -41,3 +38,13 @@ def pearsonCompare(a):
         return abs(a[1])
     else:
         return a
+
+def IUF(reviews,users):
+    if(reviews == 0):
+        return 1
+    result = m.log(users/reviews)
+    return result
+
+def caseAmp(a):
+    result = a * (abs(a) ** 1.5)
+    return result
