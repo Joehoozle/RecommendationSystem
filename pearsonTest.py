@@ -4,13 +4,12 @@ import operator as op
 from functions import *
 import math as m
 
-
-#load all of my data
+# load all of my data
 data = np.loadtxt("train.txt", delimiter="\t")
-testData = np.loadtxt("test20.txt", dtype=int)
+testData = np.loadtxt("test5.txt", dtype=int)
 
 # offset depending on test size as user ids need to be normalized
-offset = 200
+offset = 0
 
 # this is how many neighbors I need
 k = 5
@@ -28,7 +27,7 @@ data = np.vstack((data,newRows))
 # test data/test cases in list format
 testRows = testData.tolist()
 
-# calculate average rating for all users
+# calculate average rating for each user
 averages = [0 for x in range(300)]
 for i in range(len(data)):
     count = 0
@@ -39,27 +38,18 @@ for i in range(len(data)):
         avg = avg + data[i][j]
     averages[i] = avg / count
 
-
-# save Pearson Correlation similarity
-textFile = open("averages.txt", "w")
-textFile.write(str(averages))
-textFile.close()
-
-
-# calculate cosine similarity of all pairs
-pearsonDiff = [[0 for x in range(len(data))] for y in range(len(data))]
+# calculate similarity of all pairs
+pearsonSim = [[0 for x in range(len(data))] for y in range(len(data))]
 for i in range(len(data)):
     for j in range(200):
-        if i == j or pearsonDiff[i][j] != 0:
+        if i == j or pearsonSim[i][j] != 0:
             continue
-        c = pearsonCorrWeight(data[i],data[j],averages[i],averages[j])
-        pearsonDiff[i][j] = (j,c)
-        pearsonDiff[j][i] = (i,c)
-    pearsonDiff[i].sort(key = pearsonCompare, reverse = True)
+        c = pearsonSimCalc(data[i],data[j],averages[i],averages[j])
+        pearsonSim[i][j] = (j,c)
+        pearsonSim[j][i] = (i,c)
+    pearsonSim[i].sort(key = diffCompare, reverse = True)
 
 # calculate average of k-nearest neighbors
-count1 = 0
-count2 = 0
 output = []
 for i in range(len(testRows)):
     if(testRows[i][2] != 0):
@@ -69,27 +59,20 @@ for i in range(len(testRows)):
     weightN = 0
     weightD = 0
     for p in range(k):
-        neighbor = pearsonDiff[user][p][0]
-        neighborDifference = pearsonDiff[user][p][1]
+        neighbor = pearsonSim[user][p][0]
+        neighborDifference = pearsonSim[user][p][1]
         if(data[neighbor][movie] != 0):
             weightN = weightN + (neighborDifference * (data[neighbor][movie] - averages[neighbor]))
             weightD = weightD + (abs(neighborDifference))
         else:
-        #     weightN = weightN + (neighborDifference * (dataint(round(averages[neighbor]))))
             weightD = weightD + (abs(neighborDifference))
 
     prediction = averages[user] + (weightN / weightD)
     testRows[i][2] = int(round(prediction))
-    if(testRows[i][2] == 3):
-        count1 = count1 + 1
-    else:
-        count2 = count2 + 1
     output.append(testRows[i])
-print str(count1)
-print str(count2)
 
 # save result file
-textFile = open("pearsonTest20.txt","w")
+textFile = open("pearsonTest5.txt","w")
 for i in range(len(output)):
     textFile.write(str(output[i][0]) + " " + str(output[i][1]) + " " + str(output[i][2]) + "\n")
 textFile.close()
