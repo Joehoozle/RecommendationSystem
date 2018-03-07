@@ -12,7 +12,7 @@ testData = np.loadtxt("test20.txt", dtype=int)
 offset = 200
 
 # this is how many neighbors I need
-k = 5
+k = 10
 
 # put new data into a list
 newRows = [[0 for x in range(1000)] for y in range(100)]
@@ -96,17 +96,46 @@ for i in range(len(testRows)):
     movie = (testRows[i][1] - 1)
     weightN = 0
     weightD = 0
-    for p in range(k):
+    # for p in range(k):
+    #     neighbor = pearsonDiff[user][p][0]
+    #     neighborDifference = pearsonDiff[user][p][1]
+    #     if data[neighbor][movie] == 0
+    #     if(data[neighbor][movie] != 0):
+    #         weightN = weightN + (neighborDifference * (data[neighbor][movie] - averages[neighbor]))
+    #         weightD = weightD + (abs(neighborDifference))
+    #     else:
+    #         weightD = weightD + abs(neighborDifference)
+    # prediction = averages[user] + (weightN / weightD)
+    # testRows[i][2] = int(round(prediction))
+    # output.append(testRows[i])
+    p = 0
+    chosen = 0
+    count = 0
+    while chosen < k and p < 299 and type(pearsonDiff[user][p]) == tuple:
         neighbor = pearsonDiff[user][p][0]
         neighborDifference = pearsonDiff[user][p][1]
-        if(data[neighbor][movie] != 0):
+        if data[neighbor][movie] == 0:
+            p = p + 1
+            count = count + 1
+            continue
+        else:
             weightN = weightN + (neighborDifference * (data[neighbor][movie] - averages[neighbor]))
             weightD = weightD + (abs(neighborDifference))
-        else:
-            weightD = weightD + abs(neighborDifference)
-    prediction = averages[user] + (weightN / weightD)
+        # else:
+        #     weightD = weightD + abs(neighborDifference)
+        p = p + 1
+        chosen = chosen + 1
+    if weightD == 0:
+        prediction = averages[user]
+    else:
+        prediction = averages[user] + (weightN / weightD)
+    if int(round(prediction)) < 1 or int(round(prediction)) > 5:
+        print "error: " + str(user) + " " + str(movie) + " " + str(prediction)
+        prediction = 5
     testRows[i][2] = int(round(prediction))
     output.append(testRows[i])
+    print(str(count) + ": " + str(user))
+
 
 # save result file
 textFile = open("pearsonTest20.txt","w")
